@@ -75,7 +75,7 @@ $(function() {
     function disableAddItemButton() {
         // It will disable button if the first item is empty or the max number of items has been reached.
         var numItemsVisible = $('.bulky-item-wrapper:visible').length;
-        if (numItemsVisible == maxNumItems || $('.bulky-item-wrapper').first().find('ul.autocomplete__menu').children().length == 0) {
+        if (numItemsVisible == maxNumItems || !$('.bulky-item-wrapper').first().find('select').val()) {
             $("#add-new-item").prop('disabled', true);
         } else {
             $("#add-new-item").prop('disabled', false);
