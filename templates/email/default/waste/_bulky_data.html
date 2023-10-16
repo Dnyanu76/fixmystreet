@@ -1,11 +1,3 @@
-[% IF report.category == 'Small items collection' %]
-    [% SET email_summary = "Thank you for booking a small items collection with " _ cobrand.council_name _ "." %];
-    [% SET bulky_cancel_url = 'small_items/cancel' %]
-[% ELSE %]
-    [% SET email_summary = "Thank you for booking a bulky waste collection with " _ cobrand.council_name _ "." %];
-    [% SET bulky_cancel_url = 'bulky/cancel' %]
-[% END %]
-
 [% IF NOT sent_confirm_id_ref %]
     [% SET sent_confirm_id_ref = report.id %]
 [% END %]
