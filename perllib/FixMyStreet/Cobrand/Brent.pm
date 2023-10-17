@@ -621,6 +621,13 @@ sub admin_templates_external_status_code_hook {
     return $code;
 }
 
+=head2 Staff payments
+
+If a staff member is making a payment, then instead of using SCP, we redirect
+to Paye. We also need to check the completed payment against the same source.
+
+=cut
+
 around waste_cc_get_redirect_url => sub {
     my ($orig, $self, $c, $back) = @_;
 
@@ -709,6 +716,44 @@ around waste_cc_get_redirect_url => sub {
     }
 
     return $self->$orig($c, $back);
+};
+
+around garden_cc_check_payment_status => sub {
+    my ($orig, $self, $c, $p) = @_;
+
+    if (my $apn = $p->get_extra_metadata('apnReference')) {
+        my $payment = Integrations::Paye->new({
+            config => $self->feature('payment_gateway')
+        });
+
+        my $resp = $payment->query({
+            request_id => $p->id,
+            apnReference => $apn,
+        });
+
+        if ($resp->{transactionState} eq 'Complete') {
+            if ($resp->{paymentResult}->{status} eq 'Success') {
+                my $auth_details
+                    = $resp->{paymentResult}{paymentDetails}{authDetails};
+                $p->set_extra_metadata( 'authCode', $auth_details->{authCode} );
+                $p->set_extra_metadata( 'continuousAuditNumber',
+                    $resp->{paymentResult}{paymentDetails}{payments}{paymentSummary}{continousAuditNumber} );
+                $p->update_extra_field({ name => 'payment_method', value => 'csc' });
+                $p->update;
+
+                my $ref = $auth_details->{uniqueAuthId};
+                return $ref;
+            } else {
+                $c->stash->{error} = $resp->{paymentResult}->{status};
+                return undef;
+            }
+        } else {
+            $c->stash->{error} = $resp->{transactionState};
+            return undef;
+        }
+    }
+
+    return $self->$orig($c, $p);
 };
 
 =head2 waste_check_staff_payment_permissions

@@ -209,29 +209,23 @@ sub pay {
     return $res;
 }
 
-#sub query {
-#    my ($self, $args) = @_;
-#    my $credentials = $self->credentials($args);
+sub query {
+    my ($self, $args) = @_;
+    my $credentials = $self->credentials({ ref => $args->{request_id} });
 
-#    my $obj = [
-#        'common:credentials' => $credentials,
-#        'scpbase:siteId' => $self->config->{siteID},
-#        'scpbase:scpReference' => $args->{scpReference},
-#    ];
+    my $obj = [ 'temp:request' => ixhash(
+        'credentials' => $credentials,
+        'requestId' => $args->{request_id},
+        'apnReference' => $args->{apnReference},
+    ) ];
 
-#    my $res = $self->call('scpSimpleQueryRequest', @$obj);
+    my $res = $self->call('temp:Query', @$obj);
 
-#    # GET back includes
-#    # transactionState - IN_PROGESS/COMPLETE/INVALID_REFERENCE
-#    #
-#    # paymentResult/status - SUCCESS/ERROR/CARD_DETAILS_REJECTED/CANCELLED/LOGGED_OUT/NOT_ATTEMPTED
-#    # paymentResult/paymentDetails - on SUCCESS, more details, including card desc etc. not clear we need this
-#    # paymentResult/errorDetails - what is says
-#    if ( $res && $res->{scpSimpleQueryResponse} ) {
-#        $res = $res->{scpSimpleQueryResponse};
-#    }
+    if ( $res && $res->{QueryResponse} ) {
+        $res = $res->{QueryResponse}{QueryResult};
+    }
 
-#    return $res;
-#}
+    return $res;
+}
 
 1;
