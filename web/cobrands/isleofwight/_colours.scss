@@ -39,3 +39,8 @@ $meta-font: $body-font;
 
 $search-help-background: #fff3f3;
 $search-help-header-font-size-desktop: 1.25em;
+
+// This is not the colour the use on their website for their buttons, but at it matches the navbar and more important is accessible.
+$button-primary-bg-top: $blue;
+$button-primary-border: $blue;
+$button-primary-text: #fff;
